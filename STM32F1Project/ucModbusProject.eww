@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+    <project>
+        <path>$WS_DIR$\EWARM\SEGGER_RTT.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\EWARM\STM32F1HalLib.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\EWARM\ThreadX.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\EWARM\ucModbusCore.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\EWARM\ucModbusDemo.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\EWARM\xprintf.ewp</path>
+    </project>
+    <batchBuild />
+</workspace>
