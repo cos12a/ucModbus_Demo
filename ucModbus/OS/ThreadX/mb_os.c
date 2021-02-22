@@ -203,26 +203,26 @@ static  void  MB_OS_InitSlave (void)
 {
 //    OS_ERR  err;
     CHAR    *pointer = TX_NULL;
-    UINT    reslts;
+    UINT    result;
 
     
 /* Allocate the stack for thread 0.  */
 /* 为线程 0 分配堆栈。 */
-    reslts = tx_byte_allocate(&byte_pool_0, (VOID **) &pointer, MB_OS_CFG_RX_TASK_STK_SIZE, TX_NO_WAIT);
-    if ( reslts != TX_SUCCESS){
+    result = tx_byte_allocate(&byte_pool_0, (VOID **) &pointer, MB_OS_CFG_RX_TASK_STK_SIZE, TX_NO_WAIT);
+    if ( result != TX_SUCCESS){
 //          Error_Handler();
       }
 
     /* Create the main thread.  */
-    reslts = tx_thread_create(&MB_OS_RxTaskTCB, "Modbus Rx Task", MB_OS_RxTask, 0,  
+    result = tx_thread_create(&MB_OS_RxTaskTCB, "Modbus Rx Task", MB_OS_RxTask, 0,  
             pointer, MB_OS_CFG_RX_TASK_STK_SIZE, 
             3, 3, TX_NO_TIME_SLICE, TX_DONT_START);
 
     // 创建消息队列
     /* Allocate the message queue.  */
-    reslts = tx_byte_allocate(&byte_pool_0, (VOID **) &pointer, DEMO_QUEUE_SIZE*sizeof(ULONG), TX_NO_WAIT);
+    result = tx_byte_allocate(&byte_pool_0, (VOID **) &pointer, DEMO_QUEUE_SIZE*sizeof(ULONG), TX_NO_WAIT);
 
-    if (reslts != TX_SUCCESS){
+    if (result != TX_SUCCESS){
 
 #if     (RTT_PRINTF_EN == DEF_ENABLED)           
         SEGGER_RTT_printf(0, "Modbus Allocate the message queue fail.\r\n");  
@@ -231,8 +231,8 @@ static  void  MB_OS_InitSlave (void)
     }
       
     /* Create the message queue .  */
-  reslts = tx_queue_create (&MB_OS_SlaveRxQueue, "uC/Modbus Slave rx queue", TX_1_ULONG, pointer, DEMO_QUEUE_SIZE*sizeof(ULONG));
-    if (reslts != TX_SUCCESS){
+  result = tx_queue_create (&MB_OS_SlaveRxQueue, "uC/Modbus Slave rx queue", TX_1_ULONG, pointer, DEMO_QUEUE_SIZE*sizeof(ULONG));
+    if (result != TX_SUCCESS){
 #if     (RTT_PRINTF_EN == DEF_ENABLED)           
             SEGGER_RTT_printf(0, "uC/Modbus Slave rx queue Create the message queue fail.\r\n"); 
 #endif
@@ -303,11 +303,11 @@ static  void  MB_OS_ExitMaster (void)
 {
     CPU_INT08U  i;
     OS_ERR      err;
-    UINT    reslt;
+    UINT    result;
 
 
     for (i = 0; i < MODBUS_CFG_MAX_CH; i++) {                 /* Delete semaphore for each channel     */
-        reslt = tx_semaphore_delete(&MB_OS_RxSemTbl[i]);
+        result = tx_semaphore_delete(&MB_OS_RxSemTbl[i]);
     }
 }
 #endif
@@ -338,7 +338,7 @@ void  MB_OS_ExitSlave (void)
 {
 //    OS_ERR  err;
 
-    UINT    reslt = tx_thread_delete(&MB_OS_RxTaskTCB);
+    UINT    result = tx_thread_delete(&MB_OS_RxTaskTCB);
 
 
 }
@@ -497,15 +497,9 @@ static void    MB_OS_RxTask(ULONG thread_input)
     UINT    status;
     ULONG   received_message;
 
-
 //    (void)p_arg;
 
     while (DEF_TRUE) {
-//        pch = (MODBUS_CH *)OSTaskQPend(0,        /* Wait for a packet to be received                   */
-//                                       OS_OPT_PEND_BLOCKING,
-//                                       &msg_size,
-//                                       &ts,
-//                                       &err);
 
           /* Retrieve a message from the queue.  */
         status = tx_queue_receive(&MB_OS_SlaveRxQueue, &received_message, TX_WAIT_FOREVER);

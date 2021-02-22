@@ -49,9 +49,6 @@
 */
 
 /* Includes ------------------------------------------------------------------*/
-#include "usart.h"
-
-
 
 
 /*
@@ -88,7 +85,8 @@
 *********************************************************************************************************
 */
 
-//static  CPU_INT32U  MB_Tmr_ReloadCnts;
+static uint8_t rx_DMA_buffer[MODBUS_CFG_BUF_SIZE];
+
 
  
 /*
@@ -148,23 +146,16 @@ void  MB_CommExit (void)
 *********************************************************************************************************
 */
 
-void  MB_CommPortCfg (UART_HandleTypeDef         *port_nbr)
+void  MB_CommPortCfg (MODBUS_CH         *pch, UART_HandleTypeDef *port_nbr)
 {
   if (HAL_UART_Init(port_nbr) != HAL_OK)
   {
     Error_Handler();
   }
   /* Process Unlocked */
-  __HAL_UNLOCK(port_nbr);
-  
-  /* Enable the UART Parity Error Interrupt */
-  __HAL_UART_ENABLE_IT(port_nbr, UART_IT_PE);
-  
-  /* Enable the UART Error Interrupt: (Frame error, noise error, overrun error) */
-  __HAL_UART_ENABLE_IT(port_nbr, UART_IT_ERR);
-  
-  /* Enable the UART Data Register not empty Interrupt */
-  __HAL_UART_ENABLE_IT(port_nbr, UART_IT_RXNE);
+
+    HAL_UART1_Receive_DMA(&huart1, rx_DMA_buffer, MODBUS_CFG_BUF_SIZE);
+
 }
 
 
@@ -346,50 +337,80 @@ void  MB_RTU_TmrISR_Handler (void)
 #endif
 
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+
+
+
+
+
+
+__STATIC_INLINE uint32_t 
+
+USER_DMA_GetDataLength(DMA_TypeDef *DMAx, uint32_t Channel)
 {
-  for (char ch = 0; ch < MODBUS_CFG_MAX_CH; ch++) {
-    if (MB_ChTblPrt[ch]->PortNbr == huart){
-//      MB_ChTblPrt[ch]->TxBufPtr = &MB_ChTblPrt[ch]->TxBuf[0];
+  return (READ_BIT(((DMA_Channel_TypeDef *)((uint32_t)((uint32_t)DMAx + CHANNEL_OFFSET_TAB[Channel - 1U])))->CNDTR,
+                   DMA_CNDTR_NDT));
+}
+
+
+
+void UART1_ReceiveDMA_Callback(DMA_HandleTypeDef *hdma)
+{
+    static size_t old_pos = 0u;
+    size_t pos;
+    MODBUS_CH          *pch = MB_ChTblPrt[0];
+    /* Calculate current position in buffer */
+    pos = MODBUS_CFG_BUF_SIZE - USER_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_5);
+    if (pos != old_pos) {                       /* Check change in received data */
+        if (pos > old_pos) {                    /* Current position is over previous one */
+            memcpy((char *)&pch->RxBuf[0], (char const *)&rx_DMA_buffer[old_pos], pos - old_pos);
+            pch->RxCtr = pos - old_pos;
+            pch->RxBufByteCtr = pos - old_pos;
+        }
+        else {
+            memcpy((char *)&pch->RxBuf[0], (char const *)&rx_DMA_buffer[old_pos], MODBUS_CFG_BUF_SIZE - old_pos);
+            pch->RxCtr = MODBUS_CFG_BUF_SIZE - old_pos; 
+            pch->RxBufByteCtr = MODBUS_CFG_BUF_SIZE - old_pos; 
+            /* Check and continue with beginning of buffer */
+            if (pos > 0) {
+                memcpy((char *)&pch->RxBuf[MODBUS_CFG_BUF_SIZE - old_pos], (char const *)&rx_DMA_buffer[0], pos);
+                pch->RxCtr += pos;
+                pch->RxBufByteCtr += pos;
+            }
+           
+        }
+        MB_OS_RxSignal(pch);          /* RTU Timer expired for this Modbus channel         */   
+        old_pos = pos;                              /* Save current position as old */
+        /* Check and manually update if we reached end of buffer */
+//        if (old_pos == MODBUS_CFG_BUF_SIZE) {
+//            old_pos = 0;
+//        }        
     }
-  }
-    /* Initialize the UART state*/
-  huart->ErrorCode = HAL_UART_ERROR_NONE;
-  huart->gState = HAL_UART_STATE_READY;
-  huart->RxState = HAL_UART_STATE_READY;
+    
 }
 
 
 
 
- void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+void UART1_TxDMACplt_Callback(DMA_HandleTypeDef *hdma)
 {
-      
-#if     (RTT_PRINTF_EN == DEF_ENABLED)
-        SEGGER_RTT_printf(0, "HAL_UART_ErrorCallback Error code: %u.\r\n", huart->ErrorCode);      
-#endif
-  
-  /* Prevent unused argument(s) compilation warning */
-  /* Process Unlocked */
-  __HAL_UNLOCK(huart);
-  
-  /* Enable the UART Parity Error Interrupt */
-  __HAL_UART_ENABLE_IT(huart, UART_IT_PE);
-  
-  /* Enable the UART Error Interrupt: (Frame error, noise error, overrun error) */
-  __HAL_UART_ENABLE_IT(huart, UART_IT_ERR);
-  
-  /* Enable the UART Data Register not empty Interrupt */
-  __HAL_UART_ENABLE_IT(huart, UART_IT_RXNE);
 
-  /* Reset ErrorCode */
-  huart->ErrorCode = HAL_UART_ERROR_NONE;
+//    UINT status = tx_semaphore_put(&Tx_sem);
+//           if (status != TX_SUCCESS){
+//               Error_Handler();
+//           } 
 
-  /* Restore huart->gState and huart->RxState to Ready */
-  huart->gState  = HAL_UART_STATE_READY;
-  huart->RxState = HAL_UART_STATE_READY;
-  /* NOTE: This function should not be modified, when the callback is needed,
-           the HAL_UART_ErrorCallback could be implemented in the user file
-   */
 }
+
+
+void HAL_UART1_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+//    UINT status = tx_semaphore_put(&Tx_sem);
+//           if (status != TX_SUCCESS){
+//               Error_Handler();
+//           } 
+
+
+}
+
 

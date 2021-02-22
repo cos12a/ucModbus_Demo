@@ -29,6 +29,9 @@
 #include <mb.h>
 #include "cpu.h"
 
+
+#include "modbus_value.h"
+
 /*
 *********************************************************************************************************
 *                                     GET THE VALUE OF A SINGLE COIL
@@ -58,24 +61,29 @@ CPU_BOOLEAN  MB_CoilRd (CPU_INT16U   coil,
 {
     CPU_BOOLEAN  coil_val;
 
-    switch (coil) {
-        case 0:
-             coil_val = DEF_TRUE;
-             break;
-
-        case 1:
-             coil_val = DEF_FALSE;
-             break;
-
-        case 2:
-             coil_val = DEF_TRUE;
-             break;
-
-        default:
-        case 3:
-             coil_val = DEF_FALSE;
-             break;
-    }
+//    switch (coil) {
+//        case 0:
+//             coil_val = DEF_TRUE;
+//             break;
+//
+//        case 1:
+//             coil_val = DEF_FALSE;
+//             break;
+//
+//        case 2:
+//             coil_val = DEF_TRUE;
+//             break;
+//
+//        default:
+//        case 3:
+//             coil_val = DEF_FALSE;
+//             break;
+//    }
+//    coil_val =  (coil_value>>coil) & 0x1;
+    if (coil < 8)
+        coil_val = coil[coil]&0x1;
+    else 
+        coil_val = 0u;
 
     *perr = MODBUS_ERR_NONE;
     return (coil_val);
@@ -116,8 +124,17 @@ void  MB_CoilWr (CPU_INT16U    coil,
                  CPU_BOOLEAN   coil_val,
                  CPU_INT16U   *perr)
 {
-    (void)coil;
-    (void)coil_val;
+//    (void)coil;
+//    (void)coil_val;
+    if (coil_val){
+        coil_value |= (1u  << coil);
+        
+    }
+    else {
+        coil_value &= ~(1u << coil);
+    }
+    if (coil < 8)
+        coil[coil] = coil_val;
     *perr = MODBUS_ERR_NONE;
 }
 #endif
@@ -192,46 +209,55 @@ CPU_INT16U  MB_InRegRd (CPU_INT16U   reg,
 
     CPU_SR_ALLOC();
 
-    switch (reg) {
-        case 10:
-             CPU_CRITICAL_ENTER();
-//             val = (CPU_INT16U)OSCPUUsage;
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 11:
-             CPU_CRITICAL_ENTER();
-//             val = (CPU_INT16U)OSCtxSwCtr;
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 12:
-             CPU_CRITICAL_ENTER();
-//             val = (CPU_INT16U)(OSTime >> 16);
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 13:
-             CPU_CRITICAL_ENTER();
-//             val = (CPU_INT16U)(OSTime & 0x0000FFFF);
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 14:
-             CPU_CRITICAL_ENTER();
-             val = (CPU_INT16U)MB_ChSize;
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 15:
-             CPU_CRITICAL_ENTER();
-             val = (CPU_INT16U)(MB_TotalRAMSize & 0x0000FFFF);
-             CPU_CRITICAL_EXIT();
-             break;
-
-        default:
-             val = 0;
-             break;
+//    switch (reg) {
+//        case 10:
+//             CPU_CRITICAL_ENTER();
+////             val = (CPU_INT16U)OSCPUUsage;
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 11:
+//             CPU_CRITICAL_ENTER();
+////             val = (CPU_INT16U)OSCtxSwCtr;
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 12:
+//             CPU_CRITICAL_ENTER();
+////             val = (CPU_INT16U)(OSTime >> 16);
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 13:
+//             CPU_CRITICAL_ENTER();
+////             val = (CPU_INT16U)(OSTime & 0x0000FFFF);
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 14:
+//             CPU_CRITICAL_ENTER();
+//             val = (CPU_INT16U)MB_ChSize;
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 15:
+//             CPU_CRITICAL_ENTER();
+//             val = (CPU_INT16U)(MB_TotalRAMSize & 0x0000FFFF);
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        default:
+//             val = 0;
+//             break;
+//    }
+     if ((reg < 20u)&&(reg >=10)){
+        reg  -= 10u;
+        CPU_CRITICAL_ENTER();
+        val = InReg[reg];
+        CPU_CRITICAL_EXIT();
+    }
+    else{
+        val = 0;
     }
     *perr = MODBUS_ERR_NONE;
     return (val);
@@ -313,73 +339,87 @@ CPU_INT16U  MB_HoldingRegRd (CPU_INT16U   reg,
 //    CPU_SR      cpu_sr;
     CPU_SR_ALLOC();
 
-
-    switch (reg) {
-        case 0:
-             CPU_CRITICAL_ENTER();
-//             val = (CPU_INT16U)OSCPUUsage;
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 1:
-             CPU_CRITICAL_ENTER();
-//             val = (CPU_INT16U)OSCtxSwCtr;
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 2:
-             CPU_CRITICAL_ENTER();
-//             val = (CPU_INT16U)(OSTime >> 16);
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 3:
-             CPU_CRITICAL_ENTER();
-//             val = (CPU_INT16U)(OSTime & 0x0000FFFF);
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 4:
-             CPU_CRITICAL_ENTER();
-             val = (CPU_INT16U)MB_ChSize;
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 5:
-             CPU_CRITICAL_ENTER();
-             val = (CPU_INT16U)(MB_TotalRAMSize & 0x0000FFFF);
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 6:
-             CPU_CRITICAL_ENTER();
-//             val = (CPU_INT16U)((MB_ChTbl[0].RxCtr / 1000) & 0x0000FFFF);
-              val = (CPU_INT16U)((MB_ChTblPrt[0]->RxCtr / 1000) & 0x0000FFFF);
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 7:
-             CPU_CRITICAL_ENTER();
-             val = (CPU_INT16U)((MB_ChTblPrt[0]->RxCtr % 1000) & 0x0000FFFF);
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 8:
-             CPU_CRITICAL_ENTER();
-             val = (CPU_INT16U)((MB_ChTblPrt[0]->TxCtr / 1000) & 0x0000FFFF);
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case 9:
-             CPU_CRITICAL_ENTER();
-             val = (CPU_INT16U)((MB_ChTblPrt[0]->TxCtr % 1000) & 0x0000FFFF);
-             CPU_CRITICAL_EXIT();
-             break;
-
-        default:
-             val = 0;
-             break;
+//
+//    switch (reg) {
+//        case 0:
+//             CPU_CRITICAL_ENTER();
+////             val = (CPU_INT16U)OSCPUUsage;
+//             val = HoldingReg0;
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 1:
+//             CPU_CRITICAL_ENTER();
+////             val = (CPU_INT16U)OSCtxSwCtr;
+//             val = HoldingReg1;
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 2:
+//             CPU_CRITICAL_ENTER();
+////             val = (CPU_INT16U)(OSTime >> 16);
+//             val = HoldingReg2;
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 3:
+//             CPU_CRITICAL_ENTER();
+////             val = (CPU_INT16U)(OSTime & 0x0000FFFF);
+//             val = HoldingReg3;
+//
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 4:
+//             CPU_CRITICAL_ENTER();
+//             val = (CPU_INT16U)MB_ChSize;
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 5:
+//             CPU_CRITICAL_ENTER();
+//             val = (CPU_INT16U)(MB_TotalRAMSize & 0x0000FFFF);
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 6:
+//             CPU_CRITICAL_ENTER();
+////             val = (CPU_INT16U)((MB_ChTbl[0].RxCtr / 1000) & 0x0000FFFF);
+//              val = (CPU_INT16U)((MB_ChTblPrt[0]->RxCtr / 1000) & 0x0000FFFF);
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 7:
+//             CPU_CRITICAL_ENTER();
+//             val = (CPU_INT16U)((MB_ChTblPrt[0]->RxCtr % 1000) & 0x0000FFFF);
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 8:
+//             CPU_CRITICAL_ENTER();
+//             val = (CPU_INT16U)((MB_ChTblPrt[0]->TxCtr / 1000) & 0x0000FFFF);
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        case 9:
+//             CPU_CRITICAL_ENTER();
+//             val = (CPU_INT16U)((MB_ChTblPrt[0]->TxCtr % 1000) & 0x0000FFFF);
+//             CPU_CRITICAL_EXIT();
+//             break;
+//
+//        default:
+//             val = 0;
+//             break;
+//    }
+    if (reg < 10u){
+        CPU_CRITICAL_ENTER();
+        val = HoldingReg[reg];
+        CPU_CRITICAL_EXIT();
     }
+    else{
+        val = 0;
+    }
+        
     *perr = MODBUS_ERR_NONE;
     return (val);
 }
@@ -464,8 +504,20 @@ void  MB_HoldingRegWr (CPU_INT16U   reg,
                        CPU_INT16U  *perr)
 {
     /* Access to your variable here! */
-    (void)reg;
-    (void)reg_val_16;
+//    (void)reg;
+//    (void)reg_val_16;
+    CPU_SR_ALLOC();
+
+    if (reg < 10u){
+        CPU_CRITICAL_ENTER();
+        HoldingReg[reg] = reg_val_16;
+        CPU_CRITICAL_EXIT();
+    }
+    else{
+        *perr = MODBUS_ERR_NONE;
+        return;
+    }
+
     *perr = MODBUS_ERR_NONE;
 }
 #endif

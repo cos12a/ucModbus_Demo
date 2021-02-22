@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+    <project>
+        <path>$WS_DIR$\SEGGER_RTT.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\STM32_uart_lib.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\STM32F1HalLib.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\STM32ucshell.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\ThreadX.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\ucModbusCore.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\ucModbusDemo.ewp</path>
+    </project>
+    <batchBuild />
+</workspace>

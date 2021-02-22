@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<iarProjectConnection name="Mdbus" oneShot="false">
+	<includePath>
+		<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Cfg</path>
+		<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\OS\ThreadX</path>
+		<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Ports</path>
+		<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Source</path>
+		<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\mb_cmd</path>
+	</includePath>
+	<asmIncludePath>
+		<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Cfg</path>
+		<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\OS\ThreadX</path>
+		<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Ports</path>
+		<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Source</path>
+		<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\mb_cmd</path>
+	</asmIncludePath>
+	<files>
+		<group name="..\..\..\ucModbus_Source\ucModbus\Cfg">
+			<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Cfg\mb_data.c</path>
+            <path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Cfg\mb_cfg.h</path>
+		</group>
+		<group name="..\..\..\ucModbus_Source\ucModbus\OS\ThreadX">
+			<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\OS\ThreadX\mb_os.c</path>
+		</group>
+		<group name="..\..\..\ucModbus_Source\ucModbus\Ports">
+			<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Ports\mb_bsp.c</path>
+		</group>
+		<group name="..\..\..\ucModbus_Source\ucModbus\Source">
+			<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Source\mb.c</path>
+			<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Source\mbm_core.c</path>
+			<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Source\mbs_core.c</path>
+			<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\Source\mb_util.c</path>
+		</group>
+		<group name="..\..\..\ucModbus_Source\ucModbus\mb_cmd">
+			<path>$PROJ_DIR$\..\..\..\ucModbus_Source\ucModbus\mb_cmd\mb_cmd.c</path>
+		</group>
+	</files>
+</iarProjectConnection>
